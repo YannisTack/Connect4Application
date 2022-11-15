@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\Connect4Controller.cs" />
+    <Compile Include="Controller\GameController.cs" />
     <Compile Include="GameView.cs">
       <SubType>Form</SubType>
     </Compile>
