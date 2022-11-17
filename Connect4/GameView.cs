@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,11 +18,13 @@ namespace Connect4
         private GameController _controller;
         private List<MyButton> _buttons = new List<MyButton>();
         private List<Chip> _grid;
+        private Label _gameStateText;
 
         const int ChipWidth = 75;
         const int ChipHeight = 75;
         const int ButtonWidth = 75;
         const int ButtonHeight = 40;
+        const string ChipNamePrefix = "chip_";
         private Point TopLeftCornerBoard = new Point(20, 100);
 
         // Menu items
@@ -64,11 +67,24 @@ namespace Connect4
             int x = Settings.Instance.BoardSize[0];
             int y = Settings.Instance.BoardSize[1];
 
+            AddGameStateText();
             AddColumnButtons(x);
             CreateGrid(x, y);
         }
 
-        public void AddColumnButtons(int count)
+        private void AddGameStateText()
+        {
+            _gameStateText = new Label()
+            {
+                Name = "txt_GameState",
+                Text = "Player turn",
+                Location = new Point(50, 50)
+            };
+
+            Controls.Add(_gameStateText);
+        }
+
+        private void AddColumnButtons(int count)
         {
             // Adds the buttons which will be used to drop chips
 
@@ -102,7 +118,7 @@ namespace Connect4
                 {
                     Chip b = new Chip()
                     {
-                        Name = "btn_" + i + j,
+                        Name = ChipNamePrefix + j + i,
                         Size = new Size(ChipWidth, ChipHeight),
                         Location = new Point((TopLeftCornerBoard.X + 75 * j), ((TopLeftCornerBoard.Y + ButtonHeight) + ChipHeight * i)),
                         BackColor = Color.Transparent,
@@ -122,6 +138,17 @@ namespace Connect4
                 }
             }
         }
+
+        public Chip GetChipOnGrid(int column, int row)
+        {
+            return _grid.Find(x => x.Name == ChipNamePrefix + column + row);
+        }
+
+        public MyButton GetColumnButton(int column)
+        {
+            return _buttons.Find(x => x.Id == column);
+        }
+
     }
     public class MyButton : Button
     {
@@ -155,7 +182,7 @@ namespace Connect4
             }
         }
 
-        public void FillColor(string color)
+        public void SetChipColor(string color)
         {
             // Fills chips color
             switch (color)

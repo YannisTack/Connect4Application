@@ -16,14 +16,14 @@ namespace Connect4.Models
         private BoardSlot[,] _board;
         private GameState _currentGameState;
 
-        private enum GameState
+        public enum GameState
         {
             PlayerTurn,
             ComputerTurn,
             PlayerWin,
             ComputerWin
         }
-        protected enum BoardSlot
+        public enum BoardSlot
         {
             Empty,
             PlayerBlue,
@@ -34,6 +34,22 @@ namespace Connect4.Models
         {
             get { return _buttons; }
             set { _buttons = value; }
+        }
+
+        private void NextPlayerTurn()
+        {
+            if (_currentGameState == GameState.PlayerTurn)
+            {
+                _currentGameState = GameState.ComputerTurn;
+            }
+            else {  _currentGameState = GameState.PlayerTurn; }
+        }
+
+        private bool CheckForWin()
+        {
+            // Did current player win ?
+
+            return false;
         }
 
         public GameModel(GameView view)
@@ -60,17 +76,38 @@ namespace Connect4.Models
             // Push update to View
 
             // Find lowest EMPTY
-            List<BoardSlot> slotColumn = new List<BoardSlot>();
-
-            // TODO: Figure this out !!
-            int num = _board.GetLength(col);
-
-            for (int i = _board.GetLength(col); i > 0; i--)
+            for (int i = _board.GetLength(1) -1; i >= 0; i--)
             {
                 if (_board[col, i] == BoardSlot.Empty)
                 {
                     // Switch slot state and break iteration
                     _board[col, i] = BoardSlot.PlayerBlue;
+
+                    // Set chip color depending on turn
+                    if (_currentGameState == GameState.PlayerTurn)
+                    {
+                        _board[col, i] = BoardSlot.PlayerBlue;
+                        _gameView.GetChipOnGrid(col, i).SetChipColor("blue");
+                    }
+                    else
+                    {
+                        _board[col, i] = BoardSlot.ComputerRed;
+                        _gameView.GetChipOnGrid(col, i).SetChipColor("red");
+                    }
+
+                    // Disable column button if at top
+                    if (i == 0) { _gameView.GetColumnButton(col).Enabled = false; }
+
+                    // Check for win and change game state
+                    // If win -> current player wins !
+                    // If not win -> other player turn !
+                    if (CheckForWin())
+                    {
+
+                    }
+                    else { NextPlayerTurn(); }
+                    
+                    
                     break;
                 }
             }
