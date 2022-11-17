@@ -9,7 +9,9 @@ namespace Connect4
     internal class Settings
     {
         private Dictionary<GridSize, int[]> _boardSize;
-        private GridSize _gridSize;
+        private GridSize _gridSize = GridSize.Medium;
+
+        public static Settings Instance;
 
         public enum GridSize
         {
@@ -18,11 +20,19 @@ namespace Connect4
             Large
         }
 
-        public int[] GetBoardSize
+        public void SetGridSize(GridSize size) { _gridSize = size; }
+
+        public int[] BoardSize
         {
             get { return _boardSize[_gridSize]; }
-        }        
+        }
 
+        public Settings()
+        {
+            Instance = this;
+            InitBoardSizes();
+            _gridSize = GridSize.Medium;
+        }
         public Settings(GridSize gridSize)
         {
             InitBoardSizes();
