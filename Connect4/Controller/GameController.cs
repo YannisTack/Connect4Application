@@ -63,5 +63,6 @@ namespace Connect4.Controller
             MyButton b = (MyButton)sender;
             _gameModel.DropChipAtColumn(b.Id);
         }
+
     }
 }
