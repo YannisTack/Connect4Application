@@ -17,14 +17,14 @@ namespace Connect4
     {
         private GameController _controller;
         private List<MyButton> _buttons = new List<MyButton>();
-        private List<Chip> _grid;
+        private List<ChipSlot> _grid;
         private Label _gameStateText;
 
         const int ChipWidth = 75;
         const int ChipHeight = 75;
         const int ButtonWidth = 75;
         const int ButtonHeight = 40;
-        const string ChipNamePrefix = "chip_";
+        const string ChipNamePrefix = "chipSlot_";
         private Point TopLeftCornerBoard = new Point(20, 100);
 
         // Menu items
@@ -62,22 +62,12 @@ namespace Connect4
             }
         }
 
-        public void InitializeBoard()
-        {
-            int x = Settings.Instance.BoardSize[0];
-            int y = Settings.Instance.BoardSize[1];
-
-            AddGameStateText();
-            AddColumnButtons(x);
-            CreateGrid(x, y);
-        }
-
         private void AddGameStateText()
         {
             _gameStateText = new Label()
             {
                 Name = "txt_GameState",
-                Text = "Player turn",
+                Text = "Player's turn",
                 Location = new Point(50, 50)
             };
 
@@ -87,7 +77,6 @@ namespace Connect4
         private void AddColumnButtons(int count)
         {
             // Adds the buttons which will be used to drop chips
-
 
             _buttons = new List<MyButton>();
 
@@ -110,13 +99,13 @@ namespace Connect4
         private void CreateGrid(int columns, int rows)
         {
             // Create grid where the chips will fall
-            _grid = new List<Chip>();
+            _grid = new List<ChipSlot>();
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < columns; j++)
                 {
-                    Chip b = new Chip()
+                    ChipSlot b = new ChipSlot(j, i)
                     {
                         Name = ChipNamePrefix + j + i,
                         Size = new Size(ChipWidth, ChipHeight),
@@ -139,7 +128,114 @@ namespace Connect4
             }
         }
 
-        public Chip GetChipOnGrid(int column, int row)
+        public void InitializeBoard()
+        {
+            int x = Settings.Instance.BoardSize[0];
+            int y = Settings.Instance.BoardSize[1];
+
+            AddGameStateText();
+            AddColumnButtons(x);
+            CreateGrid(x, y);
+        }
+
+        public void ClearView()
+        {
+            // Clear label
+            if (_gameStateText != null)
+            {
+                _gameStateText.Dispose();
+            }
+
+            // Clear column buttons
+            if (_buttons != null && _buttons.Count > 0)
+            {
+                for (int i = 0; i < _buttons.Count; i++)
+                {
+                    _buttons[i].Dispose();
+                }
+            }
+
+            // Clear grid
+            if (_grid != null && _grid.Count > 0)
+            {
+                for (int i = 0; i < _grid.Count; i++)
+                {
+                    _grid[i].Dispose();
+                }
+            }
+        }
+
+        public void UpdateView(Player player, GameModel.BoardSlot[,] board)
+        {
+            // Update label
+            _gameStateText.Text = player.Name + "'s turn";
+
+            // Update grid
+            for (int i = 0; i < _grid.Count; i++)
+            {
+                GameModel.BoardSlot tempSlot = board[_grid[i].XPos, _grid[i].YPos];
+
+                // Check for upper level slot filled
+                if (tempSlot != GameModel.BoardSlot.Empty && _grid[i].YPos == 0)
+                {
+                    _buttons[i].Enabled = false;
+                }
+
+                // Set color for filled slots
+                if (tempSlot == GameModel.BoardSlot.Player1)
+                {
+                    _grid[i].SetChipColor(ChipSlot.Color.Blue);
+                    
+                }
+                else if (tempSlot == GameModel.BoardSlot.Player2)
+                {
+                    _grid[i].SetChipColor(ChipSlot.Color.Red);
+                }
+            }
+        }
+
+        public void UpdateLabelView(Player player, bool isWinner)
+        {
+            // Update gamestate label
+            if (!isWinner)
+            {
+                _gameStateText.Text = player.Name + "'s turn";
+            }
+            else
+            {
+                _gameStateText.Text = player.Name + " wins !!";
+            }
+        }
+
+        public void UpdateGridView(GameModel.BoardSlot[,] board)
+        {
+            // Update grid
+            for (int i = 0; i < _grid.Count; i++)
+            {
+                GameModel.BoardSlot tempSlot = board[_grid[i].XPos, _grid[i].YPos];
+
+                // Check for upper level slot filled
+                if (tempSlot != GameModel.BoardSlot.Empty && _grid[i].YPos == 0)
+                {
+                    _buttons[i].Enabled = false;
+                }
+
+                // Set color for filled slots
+                if (tempSlot == GameModel.BoardSlot.Player1)
+                {
+                    _grid[i].SetChipColor(ChipSlot.Color.Blue);
+
+                }
+                else if (tempSlot == GameModel.BoardSlot.Player2)
+                {
+                    _grid[i].SetChipColor(ChipSlot.Color.Red);
+                }
+            }
+        }
+
+        
+
+        public ChipSlot GetChipOnGrid(int column, int row)
         {
             return _grid.Find(x => x.Name == ChipNamePrefix + column + row);
         }
@@ -162,11 +258,23 @@ namespace Connect4
 
     }
 
-    public class Chip : Button
+    public class ChipSlot : Button
     {
         // Custom Button class for auto scalable images
-        private Image _imgChipPlayer = Image.FromFile(@"Resources\chip_blue.png");
-        private Image _imgChipComputer = Image.FromFile(@"Resources\chip_red.png");
+
+        private int _xPos;
+        private int _yPos;
+        private Image _imgChipPlayer1 = Image.FromFile(@"Resources\chip_blue.png");
+        private Image _imgChipPlayer2 = Image.FromFile(@"Resources\chip_red.png");
+
+        public int XPos { get { return _xPos; } }
+        public int YPos { get { return _yPos; } }
+
+        public enum Color
+        {
+            Blue,
+            Red
+        }
 
         public new Image Image
         {
@@ -182,16 +290,22 @@ namespace Connect4
             }
         }
 
-        public void SetChipColor(string color)
+        public ChipSlot(int xPos, int yPos) : base()
+        {
+            _xPos = xPos;
+            _yPos = yPos;
+        }
+
+        public void SetChipColor(Color color)
         {
             // Fills chips color
             switch (color)
             {
-                case "blue":
-                    this.Image = _imgChipPlayer;
+                case Color.Blue:
+                    this.Image = _imgChipPlayer1;
                     break;
-                case "red":
-                    this.Image = _imgChipComputer;
+                case Color.Red:
+                    this.Image = _imgChipPlayer2;
                     break;
                 default:
                     break;

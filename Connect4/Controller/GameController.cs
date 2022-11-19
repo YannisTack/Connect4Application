@@ -11,7 +11,6 @@ namespace Connect4.Controller
     internal class GameController
     {
         private GameView _gameView;
-        private GameModel _gameModel;
         private List<MyButton> _buttons;
 
         public enum ButtonListenerTypes
@@ -44,7 +43,7 @@ namespace Connect4.Controller
 
         public void NewGame()
         {
-            _gameModel = new GameModel(_gameView);
+            GameModel.Instance.ResetGame();
         }
 
         public void ChangeValue()
@@ -61,7 +60,8 @@ namespace Connect4.Controller
         {
             // Drop chip at column depending on button name
             MyButton b = (MyButton)sender;
-            _gameModel.DropChipAtColumn(b.Id);
+            GameModel.Instance.DropChipAtColumn(b.Id);
         }
+
     }
 }
