@@ -9,63 +9,213 @@ using System.Windows.Forms;
 
 namespace Connect4.Models
 {
-    internal class GameModel
+    public class GameModel
     {
         private GameView _gameView;
-        private List <Chip> _buttons;
         private BoardSlot[,] _board;
         private GameState _currentGameState;
+        private List <Player> _players;
+
+        // Singleton var
+        private static GameModel _instance = null;
+
+        public static GameModel Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new GameModel();
+                }
+                return _instance;
+            }
+        }
 
         public enum GameState
         {
-            PlayerTurn,
-            ComputerTurn,
-            PlayerWin,
-            ComputerWin
+            Player1Turn,
+            Player2Turn,
+            Player1Win,
+            Player2Win
         }
         public enum BoardSlot
         {
             Empty,
-            PlayerBlue,
-            ComputerRed
-        }
-
-        public List <Chip> Buttons
-        {
-            get { return _buttons; }
-            set { _buttons = value; }
+            Player1,
+            Player2
         }
 
         private void NextPlayerTurn()
         {
-            if (_currentGameState == GameState.PlayerTurn)
+            int nextPlayer;
+
+            if (_currentGameState == GameState.Player1Turn)
             {
-                _currentGameState = GameState.ComputerTurn;
+                _currentGameState = GameState.Player2Turn;
+                nextPlayer = 1;
             }
-            else {  _currentGameState = GameState.PlayerTurn; }
+            else 
+            {  
+                _currentGameState = GameState.Player1Turn;
+                nextPlayer = 0;
+            }
+
+            _gameView.UpdateView(_players[nextPlayer], _board);
         }
 
-        private bool CheckForWin()
+        private bool CheckForWin(int lastChipXPos, int lastChipYPos)
         {
-            // Did current player win ?
+            int numberOfConnected = 1;
+            BoardSlot slotValidator = _board[lastChipXPos, lastChipYPos];
+
+            // Is chip at border?
+            bool isAtLeftBorder = (lastChipXPos == 0);
+            bool isAtRightBorder = (lastChipXPos == _board.GetLength(0) -1);
+            bool isAtBottomBorder = (lastChipYPos == _board.GetLength(1) -1);
+            bool isAtTopBorder = (lastChipYPos == 0);
+
+            // Check diagonal 1 (\)
+            #region Check Diagonal 1 (\)
+            if (!isAtLeftBorder && !isAtTopBorder)
+            {
+                // Left
+                for (int i = 1; lastChipXPos - i >= 0 && lastChipYPos - i >= 0; i++)
+                {
+                    if (_board[lastChipXPos - i, lastChipYPos - i] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (!isAtRightBorder && !isAtBottomBorder)
+            {
+                // Right
+                for (int i = 1; lastChipXPos + i < _board.GetLength(0) && lastChipYPos + i < _board.GetLength(1); i++)
+                {
+                    if (_board[lastChipXPos + i, lastChipYPos + i] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (numberOfConnected >= 4) { return true; }
+            #endregion
+
+            #region Check Diagonal 2 (/)
+            numberOfConnected = 1;
+            if (!isAtLeftBorder && !isAtBottomBorder)
+            {
+                // Left
+                for (int i = 1; lastChipXPos - i >= 0 && lastChipYPos + i < _board.GetLength(1); i++)
+                {
+                    if (_board[lastChipXPos - i, lastChipYPos + i] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (!isAtRightBorder && !isAtTopBorder)
+            {
+                // Right
+                for (int i = 1; lastChipXPos + i < _board.GetLength(0) && lastChipYPos - i >= 0; i++)
+                {
+                    if (_board[lastChipXPos + i, lastChipYPos - i] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (numberOfConnected >= 4) { return true; }
+            #endregion
+
+
+            #region Check Horizontal (-)
+            numberOfConnected = 1;
+            if (!isAtLeftBorder)
+            {
+                // Left
+                for (int i = 1; lastChipXPos - i >= 0; i++)
+                {
+                    if (_board[lastChipXPos - i, lastChipYPos] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+                
+            }
+            if (!isAtRightBorder)
+            {
+                // Right
+                for (int i = 1; lastChipXPos + i < _board.GetLength(0); i++)
+                {
+                    if (_board[lastChipXPos + i, lastChipYPos] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (numberOfConnected >= 4) { return true; }
+            #endregion
+
+            #region Check Vertical (|)
+            numberOfConnected = 1;
+            if (!isAtBottomBorder)
+            {
+                for (int i = 1; lastChipYPos + i < _board.GetLength(1); i++)
+                {
+                    if (_board[lastChipXPos, lastChipYPos + i] == slotValidator)
+                    {
+                        numberOfConnected++;
+                    }
+                    else break;
+                }
+            }
+            if (numberOfConnected >= 4) { return true; }
+            #endregion
 
             return false;
         }
 
-        public GameModel(GameView view)
+        // Constructor
+        private GameModel()
         {
-            _gameView = view;
-            int[] boardSize = Settings.Instance.BoardSize;
-            _board = new BoardSlot[boardSize[0],boardSize[1]];
-            //_buttons = _view.AddColumns(settings.BoardSize[0]);
+            _gameView = (GameView)Form.ActiveForm;
+        }
 
-            ResetGame();
+        private Player GetCurrentPlayer()
+        {
+            if (_currentGameState == GameState.Player1Turn || _currentGameState == GameState.Player1Win)
+            {
+                return _players[0];
+            }
+            else
+            {
+                return _players[1];
+            }
         }
 
         public void ResetGame()
         {
-            //_board = new BoardSlot[,];
-            _currentGameState = GameState.PlayerTurn;
+            // Init board
+            int[] boardSize = Settings.Instance.BoardSize;
+            _board = new BoardSlot[boardSize[0], boardSize[1]];
+
+            // Init players
+            _players = new List<Player>();
+            _players.Add(new HumanPlayer("Player1"));
+            _players.Add(new ComputerPlayer("Computer"));
+
+            // Init gamestate
+            _currentGameState = GameState.Player1Turn;
+
+            // Init UI
+            _gameView.ClearView();
             _gameView.InitializeBoard();
         }
 
@@ -76,38 +226,38 @@ namespace Connect4.Models
             // Push update to View
 
             // Find lowest EMPTY
-            for (int i = _board.GetLength(1) -1; i >= 0; i--)
+            for (int row = _board.GetLength(1) -1; row >= 0; row--)
             {
-                if (_board[col, i] == BoardSlot.Empty)
+                if (_board[col, row] == BoardSlot.Empty)
                 {
                     // Switch slot state and break iteration
-                    _board[col, i] = BoardSlot.PlayerBlue;
+                    _board[col, row] = BoardSlot.Player1;
 
                     // Set chip color depending on turn
-                    if (_currentGameState == GameState.PlayerTurn)
+                    if (_currentGameState == GameState.Player1Turn)
                     {
-                        _board[col, i] = BoardSlot.PlayerBlue;
-                        _gameView.GetChipOnGrid(col, i).SetChipColor("blue");
+                        _board[col, row] = BoardSlot.Player1;
                     }
                     else
                     {
-                        _board[col, i] = BoardSlot.ComputerRed;
-                        _gameView.GetChipOnGrid(col, i).SetChipColor("red");
+                        _board[col, row] = BoardSlot.Player2;
                     }
 
-                    // Disable column button if at top
-                    if (i == 0) { _gameView.GetColumnButton(col).Enabled = false; }
+                    // Update grid UI
+                    _gameView.UpdateGridView(_board);
 
                     // Check for win and change game state
-                    // If win -> current player wins !
-                    // If not win -> other player turn !
-                    if (CheckForWin())
+                    if (CheckForWin(col, row))
                     {
-
+                        // Update gamestate UI -> push winner + win = true
+                        _gameView.UpdateLabelView(GetCurrentPlayer(), true);
                     }
-                    else { NextPlayerTurn(); }
-                    
-                    
+                    else 
+                    {
+                        _gameView.UpdateLabelView(GetCurrentPlayer(), false);
+                        NextPlayerTurn(); 
+                    }
+
                     break;
                 }
             }

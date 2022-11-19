@@ -9,13 +9,16 @@ namespace Connect4.Models
 {
     internal class HumanPlayer : Player
     {
-        public HumanPlayer(string name, Image chipImage) : base(name, chipImage)
+        public HumanPlayer(string name) : base(name)
         {
             
         }
 
         public override void Act()
         {
+            // Enable user to perform an action
+            _isActing = true;
+
             throw new NotImplementedException();
         }
     }

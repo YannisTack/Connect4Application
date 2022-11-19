@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 
 namespace Connect4.Models
 {
-    internal abstract class Player
+    public abstract class Player
     {
         private string _name;
-        private Image _chipImage;
+        protected bool _isActing = false;
 
-        public string GetName { get { return _name; } }
-        public Image GetChipImage { get { return _chipImage; } }
+        public string Name { get { return _name; } }
 
-        public Player(string name, Image chipImage)
+        public bool IsActing { get { return _isActing; } }
+
+        public Player(string name)
         {
             _name = name;
-            _chipImage = chipImage;
         }
         public abstract void Act();
     }

@@ -9,12 +9,14 @@ namespace Connect4.Models
 {
     internal class ComputerPlayer : Player
     {
-        public ComputerPlayer(string name, Image chipImage) : base(name, chipImage)
+        public ComputerPlayer(string name) : base(name)
         {
         }
 
         public override void Act()
         {
+            _isActing = true;
+
             throw new NotImplementedException();
         }
     }
