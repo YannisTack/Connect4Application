@@ -47,20 +47,25 @@ namespace Connect4.Models
 
         private void NextPlayerTurn()
         {
-            int nextPlayer;
-
             if (_currentGameState == GameState.Player1Turn)
             {
                 _currentGameState = GameState.Player2Turn;
-                nextPlayer = 1;
             }
             else 
             {  
                 _currentGameState = GameState.Player1Turn;
-                nextPlayer = 0;
             }
 
-            _gameView.UpdateView(_players[nextPlayer], _board);
+            _gameView.UpdateLabelView(GetCurrentPlayer(), false);
+
+            if (GetCurrentPlayer().GetType() == typeof(ComputerPlayer))
+            {
+                GetCurrentPlayer().Act(_board);
+            }
+            else
+            {
+                GetCurrentPlayer().Act();
+            }
         }
 
         private bool CheckForWin(int lastChipXPos, int lastChipYPos)
@@ -74,7 +79,6 @@ namespace Connect4.Models
             bool isAtBottomBorder = (lastChipYPos == _board.GetLength(1) -1);
             bool isAtTopBorder = (lastChipYPos == 0);
 
-            // Check diagonal 1 (\)
             #region Check Diagonal 1 (\)
             if (!isAtLeftBorder && !isAtTopBorder)
             {
@@ -131,7 +135,6 @@ namespace Connect4.Models
             }
             if (numberOfConnected >= 4) { return true; }
             #endregion
-
 
             #region Check Horizontal (-)
             numberOfConnected = 1;
@@ -217,6 +220,7 @@ namespace Connect4.Models
             // Init UI
             _gameView.ClearView();
             _gameView.InitializeBoard();
+            _gameView.UpdateLabelView(GetCurrentPlayer(), false);
         }
 
         public void DropChipAtColumn(int col)
@@ -224,6 +228,7 @@ namespace Connect4.Models
             // Drops chip at column
             // Change boardslot from lowest EMPTY at column
             // Push update to View
+            GetCurrentPlayer().EndAct();
 
             // Find lowest EMPTY
             for (int row = _board.GetLength(1) -1; row >= 0; row--)
@@ -251,11 +256,12 @@ namespace Connect4.Models
                     {
                         // Update gamestate UI -> push winner + win = true
                         _gameView.UpdateLabelView(GetCurrentPlayer(), true);
+                        _gameView.DisableAllButtons();
                     }
                     else 
                     {
-                        _gameView.UpdateLabelView(GetCurrentPlayer(), false);
-                        NextPlayerTurn(); 
+                        NextPlayerTurn();
+                        
                     }
 
                     break;

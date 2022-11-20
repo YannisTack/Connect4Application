@@ -19,7 +19,10 @@ namespace Connect4.Models
             // Enable user to perform an action
             _isActing = true;
 
-            throw new NotImplementedException();
+            // do something ?
+            // enable buttons ?
+
+            _isActing = false;
         }
     }
 }

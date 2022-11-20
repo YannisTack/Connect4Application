@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Connect4.Models.GameModel;
 
 namespace Connect4.Models
 {
@@ -13,11 +14,29 @@ namespace Connect4.Models
         {
         }
 
-        public override void Act()
+        private List<int> GetAvailableColumns(BoardSlot[,] board)
         {
-            _isActing = true;
+            List<int> columns = new List<int>();
 
-            throw new NotImplementedException();
+            for (int i = 0; i < board.GetLength(0); i++)
+            {
+                if (board[i,0] == BoardSlot.Empty)
+                {
+                    columns.Add(i);
+                }
+            }
+
+            return columns;
+        }
+
+        public override void Act(BoardSlot[,] board)
+        {
+            // Sick AI stuff
+            Random rnd = new Random();
+
+            List<int> colList = GetAvailableColumns(board);
+            int choice = rnd.Next(0, colList.Count - 1);
+            GameModel.Instance.DropChipAtColumn(choice);
         }
     }
 }
