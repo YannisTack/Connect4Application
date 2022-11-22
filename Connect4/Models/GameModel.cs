@@ -31,6 +31,11 @@ namespace Connect4.Models
             }
         }
 
+        public BoardSlot[,] Board
+        {
+            get { return _board; }
+        }
+
         public enum GameState
         {
             Player1Turn,

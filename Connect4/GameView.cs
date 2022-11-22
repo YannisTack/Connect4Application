@@ -146,6 +146,7 @@ namespace Connect4
             if (_gameStateText != null)
             {
                 _gameStateText.Dispose();
+                _gameStateText = null;
             }
 
             // Clear column buttons
@@ -154,6 +155,7 @@ namespace Connect4
                 foreach (MyButton button in _buttons)
                 {
                     button.Dispose();
+                    _buttons = null;
                 }
             }
 
@@ -163,6 +165,7 @@ namespace Connect4
                 foreach (ChipSlot chipSlot in _grid)
                 {
                     chipSlot.Dispose();
+                    _grid = null;
                 }
             }
         }
