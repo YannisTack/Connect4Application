@@ -25,6 +25,7 @@ namespace Connect4
         const int ButtonWidth = 75;
         const int ButtonHeight = 40;
         const string ChipNamePrefix = "chipSlot_";
+        const float LabelFontSize = 20;
         private Point TopLeftCornerBoard = new Point(20, 100);
 
         // Menu items
@@ -68,6 +69,8 @@ namespace Connect4
             {
                 Name = "txt_GameState",
                 Text = "Player's turn",
+                Font = new Font(FontFamily.GenericSerif, LabelFontSize),
+                AutoSize = true,
                 Location = new Point(50, 50)
             };
 
@@ -133,7 +136,6 @@ namespace Connect4
             int x = Settings.Instance.BoardSize[0];
             int y = Settings.Instance.BoardSize[1];
 
-            AddGameStateText();
             AddColumnButtons(x);
             CreateGrid(x, y);
         }
@@ -144,23 +146,26 @@ namespace Connect4
             if (_gameStateText != null)
             {
                 _gameStateText.Dispose();
+                _gameStateText = null;
             }
 
             // Clear column buttons
             if (_buttons != null && _buttons.Count > 0)
             {
-                for (int i = 0; i < _buttons.Count; i++)
+                foreach (MyButton button in _buttons)
                 {
-                    _buttons[i].Dispose();
+                    button.Dispose();
+                    _buttons = null;
                 }
             }
 
             // Clear grid
             if (_grid != null && _grid.Count > 0)
             {
-                for (int i = 0; i < _grid.Count; i++)
+                foreach (ChipSlot chipSlot in _grid)
                 {
-                    _grid[i].Dispose();
+                    chipSlot.Dispose();
+                    _grid = null;
                 }
             }
         }
@@ -197,6 +202,10 @@ namespace Connect4
         public void UpdateLabelView(Player player, bool isWinner)
         {
             // Update gamestate label
+            if (_gameStateText is null)
+            {
+                AddGameStateText();
+            }
             if (!isWinner)
             {
                 _gameStateText.Text = player.Name + "'s turn";
@@ -233,7 +242,13 @@ namespace Connect4
             }
         }
 
-        
+        public void DisableAllButtons()
+        {
+            foreach (MyButton button in _buttons)
+            {
+                button.Enabled = false;
+            }
+        }
 
         public ChipSlot GetChipOnGrid(int column, int row)
         {

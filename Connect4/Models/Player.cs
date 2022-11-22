@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Connect4.Models.GameModel;
 
 namespace Connect4.Models
 {
@@ -20,6 +21,17 @@ namespace Connect4.Models
         {
             _name = name;
         }
-        public abstract void Act();
+        public virtual void Act()
+        {
+            _isActing = true;
+        }
+        public virtual void Act(BoardSlot[,] board)
+        {
+            Act();
+        }
+        public void EndAct()
+        {
+            _isActing = false;
+        }
     }
 }
